@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>C&T - Tenerife Elite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #0B0B0B;
+            --card-bg: #111111;
+            --primary-gold: #C6A75C;
+            --text-white: #FFFFFF;
+        }
+        body { background-color: var(--bg-color); color: var(--text-white); font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 50px; }
+        
+        .hero-header { 
+            width: 100%; height: 40vh; 
+            background: url('https://res.cloudinary.com/di1ehofjb/image/upload/v1773239936/Principal_FOTO_wwrubd.jpg') center/cover no-repeat;
+            border-bottom: 2px solid var(--primary-gold);
+        }
+
+        .filters { display: flex; justify-content: center; gap: 8px; padding: 20px; }
+        .filter-btn { flex: 1; max-width: 140px; padding: 15px; border: 1.5px solid var(--primary-gold); background: transparent; color: var(--primary-gold); font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .filter-btn.active { background: var(--primary-gold); color: #000; }
+
+        .locales-grid { padding: 15px; display: grid; gap: 40px; }
+        .card { background: var(--card-bg); border-radius: 15px; overflow: hidden; border: 1px solid #222; }
+        
+        .media-container { position: relative; height: 250px; cursor: pointer; background: #000; }
+        .card-img, .card-video { width: 100%; height: 100%; object-fit: cover; }
+        .play-hint { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); }
+
+        .card-body { padding: 25px 20px; text-align: center; }
+        .card-name { color: var(--primary-gold); font-size: 28px; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
+        .ritual-box { margin: 15px 0; color: #ddd; font-style: italic; font-size: 14px; padding: 10px; border-top: 1px solid #222; }
+        
+        .horario-hoy { color: var(--primary-gold); font-weight: bold; margin-bottom: 5px; font-size: 14px; text-transform: uppercase; }
+        .horario-completo { font-size: 11px; color: #777; margin-bottom: 25px; line-height: 1.4; }
+
+        /* CONTACTO: LLAMAR, WHATSAPP, MAPS */
+        .main-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 25px; }
+        .action-icon { background: #1a1a1a; color: var(--primary-gold); padding: 18px; border-radius: 10px; border: 1px solid #333; text-decoration: none; font-size: 22px; }
+
+        /* ICONOS DORADOS CON TEXTO DEBAJO */
+        .amenities-grid { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; padding: 20px 0; border-top: 1px solid #222; border-bottom: 1px solid #222; }
+        .amenity { display: flex; flex-direction: column; align-items: center; min-width: 60px; }
+        .gold-circle { 
+            width: 45px; height: 45px; border: 2px solid var(--primary-gold); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            color: var(--primary-gold); font-size: 20px; margin-bottom: 8px; font-weight: bold;
+        }
+        .amenity p { font-size: 10px; color: #fff; text-transform: uppercase; margin: 0; font-weight: 600; }
+
+        /* RESERVA INFO */
+        .reserva-box { background: rgba(198, 167, 92, 0.05); border: 1px solid #333; padding: 12px; margin-bottom: 20px; font-size: 12px; color: #ccc; border-radius: 8px; }
+
+        /* INSTAGRAM Y ERROR */
+        .btn-insta { display: block; background: #222; border: 1px solid #444; color: #fff; padding: 15px; text-decoration: none; border-radius: 10px; margin-bottom: 15px; font-size: 13px; font-weight: 600; }
+        .btn-report { font-size: 10px; color: #444; text-decoration: underline; background: none; border: none; width: 100%; margin-top: 10px; }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="hero-header"></div>
+    <div class="filters">
+        <button id="cafeteoBtn" class="filter-btn">Cafeteo</button>
+        <button id="tardeoBtn" class="filter-btn">Tardeo</button>
+    </div>
+    <div id="localesGrid" class="locales-grid"></div>
+
+    <script>
+        let localesData = [];
+        let filters = { cafeteo: false, tardeo: false };
+
+        async function init() {
+            try {
+                const res = await fetch('datos.json');
+                const data = await res.json();
+                localesData = Array.isArray(data) ? data : (data.locales || []);
+                render();
+            } catch (e) { console.error("Error cargando el pan:", e); }
+        }
+
+        function render() {
+            const grid = document.getElementById('localesGrid');
+            grid.innerHTML = '';
+            const filtrados = localesData.filter(l => {
+                const mC = !filters.cafeteo || (l.categoria === 'cafeteo' || l.cafeteo === 'SI');
+                const mT = !filters.tardeo || (l.categoria === 'tardeo' || l.tardeo === 'SI');
+                return mC && mT;
+            });
+
+            filtrados.forEach((l, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                // Google Maps directo a navegación
+                const mapsUrl = l.ver_en_maps ? l.ver_en_maps.replace('place/', 'dir//') : '#';
+
+                card.innerHTML = `
+                    <div class="media-container" onclick="playVideo(${index})">
+                        <img src="${l.foto || l.imagen}" class="card-img" id="img-${index}">
+                        <video src="${l.video}" class="card-video hidden" id="vid-${index}" onended="showImg(${index})" playsinline></video>
+                        <div class="play-hint" id="overlay-${index}"><i class="fas fa-play" style="color:white; font-size:40px;"></i></div>
+                    </div>
+                    <div class="card-body">
+                        <h2 class="card-name">${l.nombre_oficial || l.nombre}</h2>
+                        <div class="ritual-box">⭐ ${l.ritual || 'El ritual de la casa'} ⭐</div>
+                        
+                        <div class="horario-hoy">Abierto hoy: ${l.horario_hoy || 'Consultar'}</div>
+                        <div class="horario-completo">${l.horario || ''}</div>
+                        
+                        <div class="main-actions">
+                            <a href="tel:${l.telefono}" class="action-icon"><i class="fas fa-phone"></i></a>
+                            <a href="${l.whatsapp}" class="action-icon" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                            <a href="${mapsUrl}" class="action-icon" target="_blank"><i class="fas fa-directions"></i></a>
+                        </div>
+
+                        <div class="amenities-grid">
+                            ${l.parking ? `<div class="amenity"><div class="gold-circle">P</div><p>${l.parking}</p></div>` : ''}
+                            ${l.terraza ? `<div class="amenity"><div class="gold-circle"><i class="fas fa-umbrella-beach"></i></div><p>${l.terraza}</p></div>` : ''}
+                            ${l.acceso ? `<div class="amenity"><div class="gold-circle"><i class="fas fa-universal-access"></i></div><p>${l.acceso}</p></div>` : ''}
+                            ${l.tarjeta ? `<div class="amenity"><div class="gold-circle"><i class="fas fa-credit-card"></i></div><p>${l.tarjeta}</p></div>` : ''}
+                            ${l.perros ? `<div class="amenity"><div class="gold-circle"><i class="fas fa-dog"></i></div><p>${l.perros}</p></div>` : ''}
+                        </div>
+
+                        ${l.reserva ? `<div class="reserva-box"><strong>INFO RESERVA:</strong> ${l.reserva}</div>` : ''}
+                        
+                        <a href="${l.instagram}" class="btn-insta" target="_blank"><i class="fab fa-instagram"></i> VER INSTAGRAM</a>
+                        <button class="btn-report" onclick="alert('Reporte enviado para ${l.nombre}')">REPORTAR DATO INCOMPLETO</button>
+                    </div>`;
+                grid.appendChild(card);
+            });
+        }
+
+        function playVideo(i) {
+            const vid = document.getElementById('vid-'+i);
+            const img = document.getElementById('img-'+i);
+            const overlay = document.getElementById('overlay-'+i);
+            if(!vid.src || vid.src.includes('undefined')) return;
+            img.classList.add('hidden'); overlay.classList.add('hidden');
+            vid.classList.remove('hidden'); vid.play();
+        }
+
+        function showImg(i) {
+            document.getElementById('vid-'+i).classList.add('hidden');
+            document.getElementById('img-'+i).classList.remove('hidden');
+            document.getElementById('overlay-'+i).classList.remove('hidden');
+        }
+
+        document.getElementById('cafeteoBtn').onclick = function() { filters.cafeteo = !filters.cafeteo; this.classList.toggle('active'); render(); };
+        document.getElementById('tardeoBtn').onclick = function() { filters.tardeo = !filters.tardeo; this.classList.toggle('active'); render(); };
+        init();
+    </script>
+</body>
+</html>
