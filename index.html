@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>C&T - Tenerife Elite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --bg-color: #0B0B0B; --card-bg: #111111; --primary-gold: #C6A75C; --text-white: #FFFFFF; }
+        body { background-color: var(--bg-color); color: var(--text-white); font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 50px; overflow-x: hidden; }
+        
+        .hero-header img { width: 100%; height: auto; display: block; border-bottom: 2px solid var(--primary-gold); }
+        .welcome-msg { text-align: center; color: var(--text-white); font-size: 24px; margin: 20px 0; font-weight: 300; }
+
+        .zone-container { padding: 0 20px 20px; display: flex; justify-content: center; }
+        .select-wrapper { position: relative; width: 100%; max-width: 400px; }
+        select { width: 100%; padding: 15px; background: #1a1a1a; color: #fff; border: 1px solid var(--primary-gold); appearance: none; border-radius: 8px; font-size: 16px; outline: none; }
+        .select-wrapper::after { content: '\f0d7'; font-family: 'Font Awesome 5 Free'; font-weight: 900; position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-gold); pointer-events: none; }
+
+        .filters { display: flex; justify-content: center; gap: 10px; padding: 10px 20px 30px; }
+        .filter-btn { flex: 1; max-width: 150px; padding: 15px; border: 1px solid var(--primary-gold); background: transparent; color: var(--primary-gold); font-weight: bold; cursor: pointer; text-transform: uppercase; border-radius: 5px; }
+        .filter-btn.active { background: var(--primary-gold); color: #000; }
+
+        .locales-grid { padding: 15px; display: grid; gap: 40px; }
+        .card { background: var(--card-bg); border-radius: 15px; overflow: hidden; border: 1px solid #222; }
+        .media-container { position: relative; height: 450px; background: #000; cursor: pointer; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; }
+        .card-video { width: 100%; height: 100%; object-fit: contain; }
+
+        .card-body { padding: 25px 20px; text-align: center; }
+        .card-name { color: var(--primary-gold); font-size: 28px; margin: 0; text-transform: uppercase; }
+        .ritual-box { margin: 15px 0; color: var(--primary-gold); font-style: italic; font-size: 14px; }
+        
+        .horario-status { color: var(--primary-gold); font-weight: bold; margin-bottom: 5px; font-size: 16px; }
+        .horario-full { font-size: 11px; color: #777; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .fa-clock { color: var(--primary-gold); }
+
+        .main-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 25px; }
+        .action-icon { background: #1a1a1a; color: var(--primary-gold); padding: 18px; border-radius: 10px; border: 1px solid #333; text-decoration: none; font-size: 22px; cursor: pointer; border: none; }
+
+        .amenities-row { display: flex; justify-content: space-around; padding: 20px 0; border-top: 1px solid #222; }
+        .amenity { flex: 1; display: flex; flex-direction: column; align-items: center; min-height: 95px; position: relative; }
+        .gold-circle { width: 42px; height: 42px; border: 1.5px solid var(--primary-gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-gold); font-weight: bold; margin-bottom: 8px; font-size: 18px; }
+        
+        /* TEXTOS AMENITIES */
+        .amenity p { font-size: 9px; color: var(--primary-gold); margin: 0; text-transform: uppercase; font-weight: bold; line-height: 1.1; }
+        
+        /* SEMÁFORO PARKING LINEAL */
+        .parking-status { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+        .mark-dot { font-size: 12px; }
+        .mark-verde { color: #2ecc71; }
+        .mark-rojo { color: #e74c3c; }
+        .mark-amarillo { color: #f1c40f; }
+
+        .status-mark { font-size: 14px; font-weight: 900; margin-bottom: 2px; display: block; }
+        .espectacular { color: var(--primary-gold); font-size: 8px; margin-top: 2px; font-weight: 800; letter-spacing: 0.5px; }
+
+        .reserva-text { color: var(--primary-gold); font-size: 13px; font-weight: bold; margin: 15px 0; border: 1px dashed var(--primary-gold); padding: 12px; border-radius: 5px; }
+        .insta-link { color: var(--primary-gold); font-size: 14px; text-decoration: none; display: block; margin: 15px 0; font-weight: bold; text-transform: uppercase; border: 1px solid var(--primary-gold); padding: 14px; border-radius: 8px; }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="hero-header">
+        <img src="https://res.cloudinary.com/di1ehofjb/image/upload/v1773239936/Principal_FOTO_wwrubd.jpg" alt="C&T">
+    </div>
+    <div class="welcome-msg">¿A dónde vamos hoy?</div>
+    
+    <div class="zone-container">
+        <div class="select-wrapper">
+            <select id="zoneFilter"><option value="all">Todas las zonas</option></select>
+        </div>
+    </div>
+
+    <div class="filters">
+        <button id="cafeteoBtn" class="filter-btn">Cafeteo</button>
+        <button id="tardeoBtn" class="filter-btn">Tardeo</button>
+    </div>
+
+    <div id="localesGrid" class="locales-grid"></div>
+
+    <script>
+        let localesData = [];
+        let activeF = { cafeteo: false, tardeo: false, zone: 'all' };
+
+        async function init() {
+            try {
+                const res = await fetch('datos.json');
+                const data = await res.json();
+                localesData = Array.isArray(data) ? data : (data.locales || []);
+                
+                const zonas = [...new Set(localesData.map(l => l.municipio))].filter(Boolean).sort();
+                zonas.forEach(z => {
+                    const opt = document.createElement('option');
+                    opt.value = z; opt.textContent = z;
+                    document.getElementById('zoneFilter').appendChild(opt);
+                });
+                render();
+            } catch(e) { console.error("Error cargando el JSON!", e); }
+        }
+
+        function render() {
+            const grid = document.getElementById('localesGrid');
+            grid.innerHTML = '';
+            const filtered = localesData.filter(l => {
+                const mZ = activeF.zone === 'all' || l.municipio === activeF.zone;
+                const mC = !activeF.cafeteo || (l.categoria === 'cafeteo' || l.cafeteo === 'SI');
+                const mT = !activeF.tardeo || (l.categoria === 'tardeo' || l.tardeo === 'SI');
+                return mZ && mC && mT;
+            });
+
+            filtered.forEach((l, i) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                // Lógica Color Parking
+                let pCol = 'mark-amarillo';
+                if(l.parking_tipo === 'facil') pCol = 'mark-verde';
+                if(l.parking_tipo === 'dificil') pCol = 'mark-rojo';
+
+                // Limpiar texto parking (quitar fácil/difícil/paréntesis)
+                let pText = String(l.parking || '').replace(/\(.*\)/g, '').replace(/fácil|difícil|depende/gi, '').trim();
+
+                // Terraza y Perros
+                let terrazaContent = (l.terraza === 'NO') ? '<span class="mark-rojo status-mark">X</span>' : '';
+                if (l.terraza_detalle && (l.terraza_detalle.match(/icon-sombrilla/g) || []).length > 1) {
+                    terrazaContent = '<span class="espectacular">ESPECTACULAR</span>';
+                }
+                const perroContent = (l.perros === 'NO') ? '<span class="mark-rojo status-mark">X</span>' : '';
+
+                card.innerHTML = `
+                    <div class="media-container" onclick="playV(${i})">
+                        <img src="${l.foto || l.imagen}" class="card-img" id="img-${i}">
+                        <video src="${l.video}" class="card-video hidden" id="vid-${i}" onended="stopV(${i})" playsinline></video>
+                    </div>
+                    <div class="card-body">
+                        <h2 class="card-name">${l.nombre_oficial || l.nombre}</h2>
+                        <div class="ritual-box">⭐ ${l.ritual || ''}</div>
+                        <div class="horario-status">${l.abierto === 'SI' ? 'ABIERTO Ahora' : 'CERRADO'}</div>
+                        <div class="horario-full"><i class="far fa-clock"></i> ${l.horario || ''}</div>
+
+                        <div class="main-actions">
+                            <button class="action-icon" onclick="handleCall('${l.telefono}')"><i class="fas fa-phone"></i></button>
+                            <button class="action-icon" onclick="handleWA('${l.whatsapp}')"><i class="fab fa-whatsapp"></i></button>
+                            <a href="${l.ver_en_maps ? l.ver_en_maps.replace('place/', 'dir//') : '#'}" class="action-icon" target="_blank"><i class="fas fa-directions"></i></a>
+                        </div>
+
+                        <div class="amenities-row">
+                            <div class="amenity">
+                                <div class="gold-circle">P</div>
+                                <div class="parking-status"><span class="mark-dot ${pCol}">●</span><p>${pText}</p></div>
+                            </div>
+                            <div class="amenity">
+                                <div class="gold-circle"><i class="fas fa-universal-access"></i></div>
+                                <p>${l.acceso || 'ACCESO'}</p>
+                            </div>
+                            <div class="amenity">
+                                <div class="gold-circle"><i class="fas fa-credit-card"></i></div>
+                                <p>TARJETA</p>
+                            </div>
+                            <div class="amenity">
+                                <div class="gold-circle"><i class="fas fa-umbrella-beach"></i></div>
+                                ${terrazaContent}
+                                <p>TERRAZA</p>
+                            </div>
+                            <div class="amenity">
+                                <div class="gold-circle"><i class="fas fa-dog"></i></div>
+                                ${perroContent}
+                                <p>PERROS</p>
+                            </div>
+                        </div>
+
+                        ${l.reserva ? `<div class="reserva-text">RESERVA: ${l.reserva}</div>` : ''}
+                        <a href="${l.instagram}" class="insta-link" target="_blank"><i class="fab fa-instagram"></i> VER INSTAGRAM</a>
+                    </div>`;
+                grid.appendChild(card);
+            });
+        }
+
+        function handleCall(tel) {
+            if(!tel || tel === 'undefined' || tel === 'null' || tel === '') alert('TELÉFONO NO DISPONIBLE');
+            else window.location.href = 'tel:' + String(tel).replace(/\s+/g, '');
+        }
+
+        function handleWA(wa) {
+            if(!wa || wa === 'undefined' || wa === 'null' || wa === '') alert('WHATSAPP NO DISPONIBLE');
+            else window.open('https://wa.me/' + String(wa).replace(/\s+/g, ''), '_blank');
+        }
+
+        function playV(i) {
+            const v = document.getElementById('vid-'+i); const im = document.getElementById('img-'+i);
+            if(!v.src || v.src.includes('undefined')) return;
+            im.classList.add('hidden'); v.classList.remove('hidden'); v.play();
+        }
+        function stopV(i) {
+            const v = document.getElementById('vid-'+i); const im = document.getElementById('img-'+i);
+            v.classList.add('hidden'); im.classList.remove('hidden');
+        }
+
+        document.getElementById('cafeteoBtn').onclick = function() { activeF.cafeteo = !activeF.cafeteo; activeF.tardeo = false; render(); };
+        document.getElementById('tardeoBtn').onclick = function() { activeF.tardeo = !activeF.tardeo; activeF.cafeteo = false; render(); };
+        document.getElementById('zoneFilter').onchange = (e) => { activeF.zone = e.target.value; render(); };
+
+        init();
+    </script>
+</body>
+</html>
