@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0B0B0B">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>C&T - Cafeteo & Tardeo | Descubre los mejores locales de Tenerife</title>
+    <meta name="description" content="Guía Elite de los mejores locales para cafeteo y tardeo en Tenerife.">
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0B0B0B;
+            --card-bg: #1a1a1a;
+            --primary-gold: #C6A75C;
+            --secondary-gold: #D4B86D;
+            --accent-gold: #E5C158;
+            --text-white: #FFFFFF;
+            --text-gray: #A0A0A0;
+            --shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-white);
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        header {
+            padding: 40px 20px 30px;
+            text-align: center;
+            background: linear-gradient(to bottom, #1a1a1a, #0B0B0B);
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 28px;
+            letter-spacing: 4px;
+            color: var(--primary-gold);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--text-gray);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .filter-container {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: rgba(11, 11, 11, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-bottom: 1px solid #333;
+        }
+
+        .main-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .filter-btn {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--primary-gold);
+            background: transparent;
+            color: var(--primary-gold);
+            border-radius: 4px;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .filter-btn.active {
+            background-color: var(--primary-gold);
+            color: #000;
+        }
+
+        .secondary-filters {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        select {
+            flex: 1;
+            background-color: #1a1a1a;
+            color: var(--text-white);
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .locales-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .locale-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid #222;
+            transition: transform 0.3s;
+        }
+
+        .card-header { position: relative; height: 200px; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .play-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+
+        .play-icon {
+            width: 50px; height: 50px;
+            background: var(--primary-gold);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 20px rgba(198, 167, 92, 0.5);
+        }
+
+        .card-content { padding: 20px; }
+        .card-title { color: var(--primary-gold); font-size: 18px; margin-bottom: 5px; }
+        .card-zone { color: var(--text-gray); font-size: 13px; margin-bottom: 10px; }
+        .card-description { font-size: 14px; color: #ddd; margin-bottom: 15px; }
+
+        .card-meta {
+            display: flex; justify-content: space-between;
+            padding-top: 15px; border-top: 1px solid #333;
+            font-size: 12px; color: var(--text-gray);
+        }
+
+        .btn-maps {
+            display: block; width: 100%;
+            padding: 12px; margin-top: 15px;
+            background-color: #222;
+            color: var(--primary-gold);
+            text-align: center; text-decoration: none;
+            border-radius: 4px; font-weight: 600;
+            border: 1px solid #333;
+        }
+
+        /* Modal Video */
+        #videoModal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 1000;
+            display: none; flex-direction: column;
+        }
+        #videoModal.active { display: flex; }
+        .video-header { padding: 20px; text-align: right; }
+        .close-video { color: var(--text-white); font-size: 30px; cursor: pointer; }
+        #videoPlayer { width: 100%; flex: 1; background: #000; }
+
+        .hidden { display: none !important; }
+        .loading-msg { text-align: center; padding: 50px; color: var(--primary-gold); }
+
+        @media (max-width: 480px) {
+            .locales-grid { grid-template-columns: 1fr; padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Cafeteo & Tardeo</div>
+        <div class="subtitle">Tenerife Elite Selection</div>
+    </header>
+
+    <div class="filter-container">
+        <div class="main-filters">
+            <button id="cafeteoBtn" class="filter-btn">Cafeteo</button>
+            <button id="tardeoBtn" class="filter-btn">Tardeo</button>
+        </div>
+        <div class="secondary-filters">
+            <select id="zoneFilter">
+                <option value="all">Todas las zonas</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="initialMessage" class="loading-msg">Cargando locales elite...</div>
+    <div id="localesGrid" class="locales-grid hidden"></div>
+
+    <div id="videoModal">
+        <div class="video-header">
+            <span class="close-video" id="videoCloseBtn">&times;</span>
+        </div>
+        <video id="videoPlayer" controls playsinline></video>
+    </div>
+
+    <script>
+        let localesData = [];
+        let activeFilters = { cafeteo: false, tardeo: false, zone: 'all' };
+
+        const localesGrid = document.getElementById('localesGrid');
+        const initialMessage = document.getElementById('initialMessage');
+        const cafeteoBtn = document.getElementById('cafeteoBtn');
+        const tardeoBtn = document.getElementById('tardeoBtn');
+        const zoneFilter = document.getElementById('zoneFilter');
+        const videoModal = document.getElementById('videoModal');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const videoCloseBtn = document.getElementById('videoCloseBtn');
+
+        // --- CARGA DE DATOS ---
+        function cargarDatos() {
+            // Buscamos datos.json en la misma carpeta
+            fetch('datos.json')
+                .then(response => {
+                    if (!response.ok) throw new Error('No se encontró datos.json');
+                    return response.json();
+                })
+                .then(data => {
+                    // Maneja si el JSON es un array directo o un objeto con propiedad 'locales'
+                    localesData = Array.isArray(data) ? data : (data.locales || []);
+                    
+                    if (localesData.length === 0) {
+                        initialMessage.textContent = 'No se encontraron locales en el archivo.';
+                        return;
+                    }
+
+                    populateZoneFilter();
+                    initialMessage.classList.add('hidden');
+                    localesGrid.classList.remove('hidden');
+                    filterLocales();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    initialMessage.textContent = 'Error: Asegúrate de que datos.json esté en la carpeta principal.';
+                });
+        }
+
+        function populateZoneFilter() {
+            const zones = [...new Set(localesData.map(l => l.municipio).filter(Boolean))].sort();
+            zoneFilter.innerHTML = '<option value="all">Todas las zonas</option>';
+            zones.forEach(zone => {
+                const opt = document.createElement('option');
+                opt.value = zone;
+                opt.textContent = zone;
+                zoneFilter.appendChild(opt);
+            });
+        }
+
+        function createLocaleCard(locale) {
+            const card = document.createElement('div');
+            card.className = 'locale-card';
+            
+            // Si no hay imagen, usamos un placeholder
+            const imgUrl = locale.imagen || 'https://via.placeholder.com/400x200?text=C%26T';
+            
+            card.innerHTML = `
+                <div class="card-header">
+                    <img src="${imgUrl}" class="card-img" alt="${locale.nombre}" onerror="this.src='https://via.placeholder.com/400x200?text=C%26T'">
+                    ${locale.video ? `
+                    <div class="play-overlay" onclick="openVideoModal('${locale.video}')">
+                        <div class="play-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="black"><path d="M8 5v14l11-7z"/></svg>
+                        </div>
+                    </div>` : ''}
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">${locale.nombre}</h3>
+                    <p class="card-zone">${locale.municipio || ''}</p>
+                    <p class="card-description">${locale.descripcion || ''}</p>
+                    <div class="card-meta">
+                        <span>💰 ~${locale.precio_medio || '--'}€</span>
+                        <span>🅿️ ${locale.parking ? 'Sí' : 'No'}</span>
+                        <span>☀️ ${locale.terraza ? 'Terraza' : 'Interior'}</span>
+                    </div>
+                    <a href="${locale.ver_en_maps}" target="_blank" class="btn-maps">VER EN MAPS</a>
+                </div>
+            `;
+            return card;
+        }
+
+        function filterLocales() {
+            localesGrid.innerHTML = '';
+            
+            const filtered = localesData.filter(l => {
+                const matchZone = activeFilters.zone === 'all' || l.municipio === activeFilters.zone;
+                const matchCafeteo = !activeFilters.cafeteo || l.categoria === 'cafeteo';
+                const matchTardeo = !activeFilters.tardeo || l.categoria === 'tardeo';
+                return matchZone && matchCafeteo && matchTardeo;
+            });
+
+            if (filtered.length === 0) {
+                localesGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 20px;">No hay locales que coincidan con los filtros.</p>';
+            } else {
+                filtered.forEach(l => localesGrid.appendChild(createLocaleCard(l)));
+            }
+        }
+
+        // --- EVENTOS ---
+        cafeteoBtn.addEventListener('click', () => {
+            activeFilters.cafeteo = !activeFilters.cafeteo;
+            cafeteoBtn.classList.toggle('active');
+            if (activeFilters.cafeteo) {
+                activeFilters.tardeo = false;
+                tardeoBtn.classList.remove('active');
+            }
+            filterLocales();
+        });
+
+        tardeoBtn.addEventListener('click', () => {
+            activeFilters.tardeo = !activeFilters.tardeo;
+            tardeoBtn.classList.toggle('active');
+            if (activeFilters.tardeo) {
+                activeFilters.cafeteo = false;
+                cafeteoBtn.classList.remove('active');
+            }
+            filterLocales();
+        });
+
+        zoneFilter.addEventListener('change', (e) => {
+            activeFilters.zone = e.target.value;
+            filterLocales();
+        });
+
+        function openVideoModal(url) {
+            videoPlayer.src = url;
+            videoModal.classList.add('active');
+            videoPlayer.play();
+        }
+
+        videoCloseBtn.addEventListener('click', () => {
+            videoModal.classList.remove('active');
+            videoPlayer.pause();
+            videoPlayer.src = '';
+        });
+
+        // Iniciar
+        cargarDatos();
+
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(err => console.log('SW no registrado', err));
+        }
+    </script>
+</body>
+</html>
