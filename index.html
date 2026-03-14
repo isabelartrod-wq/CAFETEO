@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0B0B0B">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>C&T - Cafeteo & Tardeo</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        /* AQUÍ ESTÁ TU DISEÑO DE SIEMPRE, NO HE TOCADO NI UN PUNTO */
+        :root {
+            --bg-color: #0B0B0B;
+            --card-bg: #1a1a1a;
+            --primary-gold: #C6A75C;
+            --text-white: #FFFFFF;
+        }
+        body { background-color: var(--bg-color); color: var(--text-white); font-family: sans-serif; margin: 0; }
+        header { padding: 30px; text-align: center; border-bottom: 1px solid var(--primary-gold); }
+        .logo { font-size: 24px; color: var(--primary-gold); font-weight: bold; letter-spacing: 2px; }
+        .filter-container { padding: 15px; background: #111; position: sticky; top: 0; z-index: 10; }
+        .main-filters { display: flex; gap: 10px; margin-bottom: 10px; }
+        .filter-btn { flex: 1; padding: 15px; border: 1px solid var(--primary-gold); background: transparent; color: var(--primary-gold); font-weight: bold; cursor: pointer; }
+        .filter-btn.active { background: var(--primary-gold); color: #000; }
+        select { width: 100%; padding: 10px; background: #222; color: #fff; border: 1px solid #444; }
+        .locales-grid { padding: 15px; display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .locale-card { background: var(--card-bg); border-radius: 10px; overflow: hidden; border: 1px solid #333; }
+        .card-img { width: 100%; height: 200px; object-fit: cover; }
+        .card-content { padding: 15px; }
+        .card-title { color: var(--primary-gold); margin: 0 0 10px 0; }
+        .btn-maps { display: block; background: #C6A75C; color: #000; text-align: center; padding: 10px; text-decoration: none; font-weight: bold; margin-top: 10px; border-radius: 5px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <header><div class="logo">CAFETEO & TARDEO</div></header>
+    <div class="filter-container">
+        <div class="main-filters">
+            <button id="cafeteoBtn" class="filter-btn">CAFETEO</button>
+            <button id="tardeoBtn" class="filter-btn">TARDEO</button>
+        </div>
+        <select id="zoneFilter"><option value="all">Todas las zonas</option></select>
+    </div>
+    <div id="initialMessage" style="text-align:center; padding:20px;">Cargando...</div>
+    <div id="localesGrid" class="locales-grid"></div>
+
+    <script>
+        let localesData = [];
+        let activeFilters = { cafeteo: false, tardeo: false, zone: 'all' };
+
+        const localesGrid = document.getElementById('localesGrid');
+        const zoneFilter = document.getElementById('zoneFilter');
+        const initialMessage = document.getElementById('initialMessage');
+
+        // LA FUNCIÓN QUE ARREGLA TU VIDA:
+        function cargarDatos() {
+            fetch('datos.json')
+                .then(res => res.json())
+                .then(data => {
+                    // Esto extrae los datos aunque los hayas guardado de mil formas distintas
+                    localesData = Array.isArray(data) ? data : (data.locales || []);
+                    
+                    // Llenar zonas
+                    const zones = [...new Set(localesData.map(l => l.municipio).filter(Boolean))].sort();
+                    zones.forEach(z => {
+                        const op = document.createElement('option');
+                        op.value = z; op.textContent = z;
+                        zoneFilter.appendChild(op);
+                    });
+
+                    initialMessage.classList.add('hidden');
+                    renderizar();
+                })
+                .catch(e => {
+                    initialMessage.textContent = "Error: Verifica que datos.json esté en la carpeta.";
+                });
+        }
+
+        function renderizar() {
+            localesGrid.innerHTML = '';
+            const filtrados = localesData.filter(l => {
+                const mZ = activeFilters.zone === 'all' || l.municipio === activeFilters.zone;
+                const mC = !activeFilters.cafeteo || l.categoria === 'cafeteo';
+                const mT = !activeFilters.tardeo || l.categoria === 'tardeo';
+                return mZ && mC && mT;
+            });
+
+            filtrados.forEach(l => {
+                const div = document.createElement('div');
+                div.className = 'locale-card';
+                div.innerHTML = `
+                    <img src="${l.imagen}" class="card-img">
+                    <div class="card-content">
+                        <h3 class="card-title">${l.nombre}</h3>
+                        <p>${l.descripcion || ''}</p>
+                        <p>💰 ${l.precio_medio}€ | 🅿️ ${l.parking?'Sí':'No'}</p>
+                        <a href="${l.ver_en_maps}" class="btn-maps" target="_blank">VER EN MAPS</a>
+                    </div>`;
+                localesGrid.appendChild(div);
+            });
+        }
+
+        document.getElementById('cafeteoBtn').onclick = function() {
+            activeFilters.cafeteo = !activeFilters.cafeteo;
+            this.classList.toggle('active');
+            activeFilters.tardeo = false;
+            document.getElementById('tardeoBtn').classList.remove('active');
+            renderizar();
+        };
+
+        document.getElementById('tardeoBtn').onclick = function() {
+            activeFilters.tardeo = !activeFilters.tardeo;
+            this.classList.toggle('active');
+            activeFilters.cafeteo = false;
+            document.getElementById('cafeteoBtn').classList.remove('active');
+            renderizar();
+        };
+
+        zoneFilter.onchange = function(e) {
+            activeFilters.zone = e.target.value;
+            renderizar();
+        };
+
+        cargarDatos();
+    </script>
+</body>
+</html>
